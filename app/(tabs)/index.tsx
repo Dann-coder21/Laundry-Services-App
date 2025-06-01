@@ -1,75 +1,718 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
+import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import {
+  FlatList,
+  Image,
+  Pressable,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+const HomeScreen = () => {
+  const router = useRouter();
+  const [activeCategory, setActiveCategory] = useState('All');
+  const [servicePressed, setServicePressed] = useState(null);
 
-export default function HomeScreen() {
+  const currentUser = {
+    name: 'John',
+    avatarUrl: 'https://randomuser.me/api/portraits/men/1.jpg',
+    location: 'Downtown Branch',
+  };
+
+  const notificationCount = 1;
+
+  const services = [
+    {
+      id: '1',
+      title: 'Wash & Fold',
+      description: 'Regular laundry service',
+      iconName: 'washing-machine',
+      iconSet: MaterialCommunityIcons,
+      color: '#4CAF50',
+      category: 'Wash & Fold'
+    },
+    {
+      id: '2',
+      title: 'Dry Clean',
+      description: 'Professional dry cleaning',
+      iconName: 'hanger',
+      iconSet: MaterialCommunityIcons,
+      color: '#2196F3',
+      category: 'Dry Clean'
+    },
+    {
+      id: '3',
+      title: 'Ironing',
+      description: 'Press only service',
+      iconName: 'iron-outline',
+      iconSet: MaterialCommunityIcons,
+      color: '#FF9800',
+      category: 'Ironing'
+    },
+    {
+      id: '4',
+      title: 'Premium',
+      description: 'Delicate & special care',
+      iconName: 'diamond-stone',
+      iconSet: MaterialCommunityIcons,
+      color: '#9C27B0',
+      category: 'Premium'
+    },
+  ];
+
+  const [activeOrders, setActiveOrders] = useState([
+    {
+      id: 'ORD789',
+      serviceType: 'Wash & Fold',
+      items: 5,
+      status: 'Processing',
+      statusColor: '#FF9800',
+      estimatedCompletion: 'Today, 5:00 PM',
+      icon: 'washing-machine-alert',
+    },
+    {
+      id: 'ORD788',
+      serviceType: 'Dry Clean',
+      items: 2,
+      status: 'Ready for Pickup',
+      statusColor: '#4CAF50',
+      estimatedCompletion: 'Ready Now',
+      icon: 'hanger',
+    },
+  ]);
+  // To test empty state: const [activeOrders, setActiveOrders] = useState([]);
+
+
+  const filteredServices = activeCategory === 'All'
+    ? services
+    : services.filter(service => service.category === activeCategory);
+
+  const renderServiceItem = ({ item }) => {
+    const IconComponent = item.iconSet || MaterialCommunityIcons;
+    const isPressed = servicePressed === item.id;
+
+    const categoryRoutes = {
+      'Wash & Fold': 'WashAndFold',
+      'Dry Clean': 'DryClean',
+      'Ironing': 'Ironing',
+      'Premium': 'Premium',
+    };
+
+    return (
+      <Pressable
+        onPressIn={() => setServicePressed(item.id)}
+        onPressOut={() => setServicePressed(null)}
+        onPress={() => {
+          setServicePressed(item.id);
+          const routeSegment = categoryRoutes[item.category];
+          router.push(`/categories/${routeSegment}`);
+        }}
+        style={({ pressed }) => [
+          styles.serviceCard,
+          {
+            backgroundColor: item.color,
+            transform: [{ scale: pressed || isPressed ? 0.95 : 1 }],
+            shadowColor: `${item.color}B0`,
+          },
+          pressed || isPressed ? styles.serviceCardActive : null,
+        ]}
+      >
+        <IconComponent name={item.iconName} size={34} color="white" />
+        <Text style={styles.serviceTitle}>{item.title}</Text>
+        <Text style={styles.serviceDesc}>{item.description}</Text>
+      </Pressable>
+    );
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#f9f9f9" />
+
+      <BlurView intensity={50} tint="light" style={styles.headerCard}>
+        <View style={styles.headerLeft}>
+          <Image
+            source={{ uri: currentUser.avatarUrl }}
+            style={styles.avatarLarge}
+          />
+          <View>
+            <Text style={styles.greetingModern}>
+              Hello, <Text style={styles.userName}>{currentUser.name}</Text>!
+            </Text>
+            <Text style={styles.greetingSub}>Welcome back 👋</Text>
+            <View style={styles.locationRow}>
+              <MaterialIcons name="location-pin" size={16} color="#5E35B1" />
+              <Text style={styles.locationModern}>{currentUser.location}</Text>
+            </View>
+          </View>
+        </View>
+        <TouchableOpacity
+          style={styles.bellContainer}
+          activeOpacity={0.7}
+          onPress={() => router.push('/NotificationsScreen')}
+        >
+          <MaterialIcons name="notifications" size={28} color="#5E35B1" />
+          {notificationCount > 0 && (
+            <View style={styles.badgeModern}>
+              <Text style={styles.badgeTextModern}>
+                {notificationCount > 9 ? '9+' : notificationCount}
+              </Text>
+            </View>
+          )}
+        </TouchableOpacity>
+      </BlurView>
+
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollViewContent}>
+        <View style={styles.promoBannerContainer}>
+          <LinearGradient
+            colors={['#5E35B1', '#7C4DFF']}
+            style={styles.promoBanner}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <Text style={styles.promoText}>30% OFF on First 5 Orders!</Text>
+            <Text style={styles.promoCode}>Use code: LAUNCH30</Text>
+            <TouchableOpacity
+              style={styles.promoButton}
+              activeOpacity={0.85}
+              onPress={() => router.push('/promo/promo-page')}
+            >
+              <Text style={styles.promoButtonText}>Claim Offer</Text>
+            </TouchableOpacity>
+          </LinearGradient>
+        </View>
+
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Our Services</Text>
+        </View>
+
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.categoriesContainer}
+        >
+          <TouchableOpacity
+            style={[
+              styles.categoryButton,
+              activeCategory === 'All' && styles.activeCategory,
+            ]}
+            activeOpacity={0.7}
+            onPress={() => setActiveCategory('All')}
+          >
+            <MaterialCommunityIcons
+              name="apps"
+              size={18}
+              color={activeCategory === 'All' ? '#fff' : '#5E35B1'}
+              style={{ marginRight: 7 }}
+            />
+            <Text style={[
+              styles.categoryText,
+              activeCategory === 'All' && styles.activeCategoryText
+            ]}>
+              All
+            </Text>
+          </TouchableOpacity>
+
+          {services.map(service => (
+            <TouchableOpacity
+              key={service.category}
+              style={[
+                styles.categoryButton,
+                activeCategory === service.category && styles.activeCategory,
+              ]}
+              activeOpacity={0.7}
+              onPress={() => setActiveCategory(service.category)}
+            >
+              <MaterialCommunityIcons
+                name={service.iconName}
+                size={18}
+                color={activeCategory === service.category ? '#fff' : '#5E35B1'}
+                style={{ marginRight: 7 }}
+              />
+              <Text style={[
+                styles.categoryText,
+                activeCategory === service.category && styles.activeCategoryText
+              ]}>
+                {service.category}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
+        <FlatList
+          data={filteredServices}
+          renderItem={renderServiceItem}
+          keyExtractor={item => item.id}
+          numColumns={2}
+          scrollEnabled={false}
+          contentContainerStyle={styles.servicesGrid}
+          columnWrapperStyle={styles.servicesRow}
         />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Active Orders</Text>
+          {activeOrders.length > 0 && (
+            <TouchableOpacity onPress={() => router.push('/orders/history')}>
+              <Text style={styles.seeAll}>View All</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {activeOrders.length > 0 ? (
+          <FlatList
+            data={activeOrders.slice(0, 2)}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={styles.activeOrderCard}
+                activeOpacity={0.8}
+                onPress={() => router.push(`/orders/${item.id}`)}
+              >
+                <View style={styles.activeOrderIconContainer}>
+                  <MaterialCommunityIcons name={item.icon} size={28} color="#5E35B1" />
+                </View>
+                <View style={styles.activeOrderInfo}>
+                  <Text style={styles.activeOrderServiceType}>{item.serviceType} - {item.items} items</Text>
+                  <Text style={styles.activeOrderId}>ID: {item.id}</Text>
+                  <View style={styles.activeOrderStatusRow}>
+                    <View style={[styles.statusIndicator, { backgroundColor: item.statusColor }]} />
+                    <Text style={[styles.activeOrderStatus, { color: item.statusColor }]}>
+                      {item.status}
+                    </Text>
+                  </View>
+                  <Text style={styles.activeOrderEst}>{item.estimatedCompletion}</Text>
+                </View>
+                <MaterialIcons name="chevron-right" size={24} color="#B0BEC5" />
+              </TouchableOpacity>
+            )}
+            keyExtractor={item => item.id}
+            scrollEnabled={false}
+          />
+        ) : (
+          <View style={styles.emptyOrders}>
+            <MaterialCommunityIcons name="package-variant-closed" size={54} color="#ccc" />
+            <Text style={styles.emptyText}>No active orders</Text>
+            <Text style={styles.emptySubText}>Your ongoing orders will appear here.</Text>
+            <TouchableOpacity
+              style={styles.orderButton}
+              activeOpacity={0.85}
+              onPress={() => router.push('/order/select-service')}
+            >
+              <Text style={styles.orderButtonText}>Place New Order</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Pickup Schedule</Text>
+          <TouchableOpacity onPress={() => router.push('/schedule/schedule1')}>
+            <Text style={styles.seeAll}>View Schedule</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.scheduleCard}>
+          <View style={styles.scheduleIconBg}>
+            <MaterialCommunityIcons name="calendar-check" size={24} color="#4CAF50" />
+          </View>
+          <View style={styles.scheduleInfo}>
+            <Text style={styles.scheduleTitle}>Next Pickup</Text>
+            <Text style={styles.scheduleTime}>Tomorrow, 9:00 AM - 11:00 AM</Text>
+          </View>
+          <TouchableOpacity
+            style={styles.scheduleButton}
+            activeOpacity={0.85}
+            onPress={() => router.push('/schedule/edit')}
+          >
+            <Text style={styles.scheduleButtonText}>Change</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  titleContainer: {
+  container: {
+    flex: 1,
+    backgroundColor: '#f9f9f9',
+  },
+  scrollViewContent: {
+    paddingBottom: 80,
+  },
+  headerCard: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginHorizontal: 20,
+    marginTop: 20,
+    marginBottom: 15,
+    padding: 18,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.4)',
+    shadowColor: '#5E35B1',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.25,
+    shadowRadius: 15,
+    elevation: 8,
+    overflow: 'hidden',
+  },
+  headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  avatarLarge: {
+    width: 54,
+    height: 54,
+    borderRadius: 27,
+    marginRight: 14,
+    borderWidth: 2.5,
+    borderColor: '#EDE7F6',
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
+  greetingModern: {
+    fontSize: 17,
+    fontWeight: '500',
+    color: '#333',
+    marginBottom: 2,
+  },
+  greetingSub: {
+    fontSize: 13,
+    color: '#888',
+    marginBottom: 2,
+  },
+  userName: {
+    color: '#5E35B1',
+    fontWeight: 'bold',
+  },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  locationModern: {
+    fontSize: 13,
+    color: '#5E35B1',
+    marginLeft: 3,
+    fontWeight: '500',
+  },
+  bellContainer: {
+    position: 'relative',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 8,
+    borderRadius: 22,
+    backgroundColor: 'rgba(94,53,177,0.1)',
+  },
+  badgeModern: {
     position: 'absolute',
+    top: -4,
+    right: -6,
+    backgroundColor: '#FF5722',
+    borderRadius: 8,
+    minWidth: 16,
+    height: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 3,
+    zIndex: 1,
+  },
+  badgeTextModern: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  promoBannerContainer: {
+    marginHorizontal: 20,
+    marginTop: 20,
+    borderRadius: 15,
+    overflow: 'hidden',
+    shadowColor: '#5E35B1',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.2,
+    shadowRadius: 15,
+    elevation: 6,
+  },
+  promoBanner: {
+    padding: 25,
+    alignItems: 'center',
+  },
+  promoText: {
+    color: 'white',
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 6,
+    textAlign: 'center',
+    lineHeight: 26,
+  },
+  promoCode: {
+    color: 'rgba(255,255,255,0.95)',
+    fontSize: 15,
+    textAlign: 'center',
+    marginBottom: 15,
+    fontWeight: '500',
+  },
+  promoButton: {
+    marginTop: 10,
+    backgroundColor: '#fff',
+    paddingHorizontal: 25,
+    paddingVertical: 10,
+    borderRadius: 25,
+    shadowColor: '#5E35B1',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  promoButtonText: {
+    color: '#5E35B1',
+    fontWeight: '700',
+    fontSize: 16,
+    letterSpacing: 0.5,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    marginTop: 25,
+    marginBottom: 10,
+  },
+  sectionTitle: {
+    fontSize: 19,
+    fontWeight: '700',
+    color: '#333',
+  },
+  seeAll: {
+    color: '#5E35B1',
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  categoriesContainer: {
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+  },
+  categoryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 25,
+    backgroundColor: '#ECEFF1',
+    marginRight: 10,
+    borderWidth: 1,
+    borderColor: '#CFD8DC',
+    minWidth: 100,
+    justifyContent: 'center',
+  },
+  activeCategory: {
+    backgroundColor: '#5E35B1',
+    borderColor: '#5E35B1',
+    shadowColor: '#5E35B1',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  categoryText: {
+    color: '#546E7A',
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  activeCategoryText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  servicesGrid: {
+    paddingHorizontal: 15,
+    paddingBottom: 20,
+  },
+  servicesRow: {
+    justifyContent: 'space-between',
+    marginBottom: 15,
+  },
+  serviceCard: {
+    width: '48%',
+    aspectRatio: 1,
+    padding: 18,
+    borderRadius: 16,
+    justifyContent: 'space-evenly',
+    alignItems: 'center',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  serviceCardActive: {
+    shadowOpacity: 0.3,
+    elevation: 8,
+  },
+  serviceTitle: {
+    color: 'white',
+    fontSize: 17,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  serviceDesc: {
+    color: 'rgba(255,255,255,0.9)',
+    fontSize: 12,
+    textAlign: 'center',
+    lineHeight: 16,
+  },
+  emptyOrders: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 30,
+    paddingHorizontal: 20,
+    marginHorizontal: 20,
+    marginTop: 10,
+  },
+  emptyText: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#757575',
+    marginTop: 18,
+    textAlign: 'center',
+  },
+  emptySubText: {
+    fontSize: 15,
+    color: '#9E9E9E',
+    marginTop: 8,
+    marginBottom: 25,
+    textAlign: 'center',
+  },
+  orderButton: {
+    backgroundColor: '#5E35B1',
+    paddingHorizontal: 35,
+    paddingVertical: 14,
+    borderRadius: 28,
+    marginTop: 10,
+    shadowColor: '#5E35B1',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  orderButtonText: {
+    color: 'white',
+    fontWeight: '700',
+    fontSize: 16,
+    letterSpacing: 0.7,
+  },
+  scheduleCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    borderRadius: 15,
+    padding: 20,
+    marginHorizontal: 20,
+    marginBottom: 25,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  scheduleIconBg: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#E8F5E9',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 18,
+  },
+  scheduleInfo: {
+    flex: 1,
+  },
+  scheduleTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#333',
+  },
+  scheduleTime: {
+    fontSize: 14,
+    color: '#555',
+    marginTop: 5,
+  },
+  scheduleButton: {
+    paddingHorizontal: 18,
+    paddingVertical: 9,
+    borderRadius: 22,
+    backgroundColor: '#EDE7F6',
+    shadowColor: '#5E35B1',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  scheduleButtonText: {
+    color: '#5E35B1',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  activeOrderCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    borderRadius: 15,
+    padding: 18,
+    marginHorizontal: 20,
+    marginBottom: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 3,
+  },
+  activeOrderIconContainer: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#EDE7F6',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 15,
+  },
+  activeOrderInfo: {
+    flex: 1,
+  },
+  activeOrderServiceType: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 3,
+  },
+  activeOrderId: {
+    fontSize: 12,
+    color: '#757575',
+    marginBottom: 6,
+  },
+  activeOrderStatusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  statusIndicator: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 6,
+  },
+  activeOrderStatus: {
+    fontSize: 13,
+    fontWeight: 'bold',
+  },
+  activeOrderEst: {
+    fontSize: 13,
+    color: '#555',
   },
 });
+
+export default HomeScreen;
