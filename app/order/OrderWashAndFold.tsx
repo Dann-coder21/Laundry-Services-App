@@ -1,25 +1,24 @@
-import { Stack, useRouter } from 'expo-router';
-import React, { useState, useCallback, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Platform,
-  TextInput,
-  Animated,
-  Modal,
-  FlatList,
-  Alert,
-} from 'react-native';
-import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { ThemedView } from '@/components/ThemedView';
 import { Colors } from '@/constants/Colors';
-import { LinearGradient, LinearGradientProps } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { BlurView } from 'expo-blur';
+import { LinearGradient, LinearGradientProps } from 'expo-linear-gradient';
+import { Stack, useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import {
+  Animated,
+  FlatList,
+  Modal,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 
 // Define types
@@ -60,10 +59,10 @@ export default function OrderService() {
 
   // Weight Options
   const weightOptions = [
-    { label: '5 - 10 lbs', value: 7.5, price: 1500 },
-    { label: '11 - 20 lbs', value: 15, price: 2500 },
-    { label: '21 - 30 lbs', value: 25, price: 3500 },
-    { label: '31 - 40 lbs', value: 35, price: 4500 },
+    { label: '3 - 6 kgs', value: 7.5, price: 400 },
+    { label: '7 - 10 kgs', value: 15, price: 750 },
+    { label: '11 - 14 kgs', value: 25, price: 1000 },
+    { label: '15 - 18 lbs', value: 35, price: 1250 },
   ];
   const [weightModalVisible, setWeightModalVisible] = useState(false);
   const [selectedWeight, setSelectedWeight] = useState(weightOptions[0]);

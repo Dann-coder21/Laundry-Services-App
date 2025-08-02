@@ -1,4 +1,4 @@
-import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons, MaterialIcons, FontAwesome } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
@@ -15,6 +15,77 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+
+// Add this above the HomeScreen component
+const OrderSummaryCard = ({ orderData }) => {
+  const router = useRouter();
+
+  // Destructure with default values to handle cases where data might be missing
+  const {
+    itemName = 'No recent order',
+    itemPrice = 0,
+    subtotal = 0,
+    deliveryFee = 0, // Not used in this card's display, but good to have
+    discount = 0,
+    tax = 0, // Not used in this card's display, but good to have
+    total = 0,
+    paymentMethodType = 'N/A',
+    paymentMethodLast4 = '0000'
+  } = orderData || {}; // Ensure orderData itself is not null/undefined
+
+  const formatToKsh = (amount) => {
+    // Ensure amount is a number beforetoLocaleString
+    const numericAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+    return `KSh ${numericAmount.toLocaleString('en-KE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  };
+
+  return (
+    <TouchableOpacity
+      style={styles.orderSummaryCard}
+      onPress={() => router.push('/order/order-summary')} // Assuming this is the correct route to full summary
+    >
+      <Text style={styles.orderSummaryTitle}>Recent Order Summary</Text>
+
+      {/* Order Item */}
+      <View style={styles.orderItemRow}>
+        <Text style={styles.orderItemName} numberOfLines={1}>{itemName}</Text>
+        <Text style={styles.orderItemPrice}>{formatToKsh(itemPrice)}</Text>
+      </View>
+
+      {/* Order Total Summary */}
+      <View style={styles.summaryRowMini}>
+        <Text style={styles.summaryLabelMini}>Subtotal</Text>
+        <Text style={styles.summaryValueMini}>{formatToKsh(subtotal)}</Text>
+      </View>
+      {discount > 0 && (
+        <View style={styles.summaryRowMini}>
+          <Text style={styles.summaryLabelMini}>Discount</Text>
+          <Text style={[styles.summaryValueMini, styles.discountValue]}>
+            -{formatToKsh(discount)}
+          </Text>
+        </View>
+      )}
+      <View style={styles.summaryRowMini}>
+        <Text style={styles.summaryLabelMini}>Total</Text>
+        <Text style={styles.totalValueMini}>{formatToKsh(total)}</Text>
+      </View>
+
+      {/* Payment Method */}
+      <View style={styles.paymentRow}>
+        <FontAwesome name="credit-card" size={16} color="#5E35B1" />
+        <Text style={styles.paymentText}>
+          {paymentMethodType} •••• {paymentMethodLast4}
+        </Text>
+      </View>
+
+      <View style={styles.viewFullSummary}>
+        <Text style={styles.viewFullText}>View Full Summary</Text>
+        <MaterialIcons name="arrow-forward" size={18} color="#5E35B1" />
+      </View>
+    </TouchableOpacity>
+  );
+};
+
 
 const HomeScreen = () => {
   const router = useRouter();
@@ -89,6 +160,19 @@ const HomeScreen = () => {
     },
   ]);
   // To test empty state: const [activeOrders, setActiveOrders] = useState([]);
+
+  // Add mock order data for the new card
+  const [recentOrder, setRecentOrder] = useState({
+    itemName: 'Premium Dry Cleaning',
+    itemPrice: 2500,
+    subtotal: 2500,
+    deliveryFee: 300,
+    discount: 500,
+    tax: 320,
+    total: 2620,
+    paymentMethodType: 'VISA',
+    paymentMethodLast4: '7890'
+  });
 
 
   const filteredServices = activeCategory === 'All'
@@ -189,6 +273,7 @@ const HomeScreen = () => {
           </LinearGradient>
         </View>
 
+        {/* Our Services Section */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Our Services</Text>
         </View>
@@ -255,6 +340,10 @@ const HomeScreen = () => {
           contentContainerStyle={styles.servicesGrid}
           columnWrapperStyle={styles.servicesRow}
         />
+
+        {/* RECENT ORDER SUMMARY - MOVED HERE AND STYLED FOR SPACING */}
+        <OrderSummaryCard orderData={recentOrder} /> {/* marginTop is now inside the style definition */}
+
 
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Active Orders</Text>
@@ -531,7 +620,7 @@ const styles = StyleSheet.create({
   },
   servicesGrid: {
     paddingHorizontal: 15,
-    paddingBottom: 20,
+    paddingBottom: 20, // This provides space below the service cards
   },
   servicesRow: {
     justifyContent: 'space-between',
@@ -712,6 +801,93 @@ const styles = StyleSheet.create({
   activeOrderEst: {
     fontSize: 13,
     color: '#555',
+  },
+  // --- Updated styles for OrderSummaryCard ---
+  orderSummaryCard: {
+    backgroundColor: 'white',
+    borderRadius: 15,
+    padding: 20,
+    marginHorizontal: 20,
+    marginTop: 20, // Provides space after the services grid (which has paddingBottom: 20)
+    marginBottom: 20,
+    shadowColor: '#5E35B1', // Changed shadow color to purple
+    shadowOffset: { width: 0, height: 6 }, // Slightly larger offset
+    shadowOpacity: 0.2, // Increased opacity for more prominence
+    shadowRadius: 12, // Increased radius for softer, larger shadow
+    elevation: 8, // Increased elevation for Android
+  },
+  orderSummaryTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#333',
+    marginBottom: 15,
+  },
+  orderItemRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f5f5f5',
+  },
+  orderItemName: {
+    fontSize: 16,
+    color: '#333',
+    fontWeight: '500',
+    flex: 1,
+    marginRight: 10,
+  },
+  orderItemPrice: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+  },
+  summaryRowMini: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 6,
+  },
+  summaryLabelMini: {
+    fontSize: 14,
+    color: '#555',
+  },
+  summaryValueMini: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+  },
+  totalValueMini: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#5E35B1',
+  },
+  paymentRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#f5f5f5',
+  },
+  paymentText: {
+    fontSize: 14,
+    color: '#555',
+    marginLeft: 8,
+  },
+  viewFullSummary: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 15,
+  },
+  viewFullText: {
+    color: '#5E35B1',
+    fontWeight: '600',
+    fontSize: 15,
+    marginRight: 5,
+  },
+  discountValue: {
+    color: '#4CAF50',
   },
 });
 
