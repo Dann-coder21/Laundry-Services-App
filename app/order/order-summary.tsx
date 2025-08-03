@@ -7,34 +7,28 @@ import {
   ScrollView,
   Animated,
   Platform,
-
 } from 'react-native';
 import { MaterialCommunityIcons, FontAwesome, MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
 import { BlurView } from 'expo-blur';
-
+import { useCart} from '../context/CartContext';// --- 1. Import the global cart hook
 
 const OrderSummary = () => {
   const router = useRouter();
-  const params = useLocalSearchParams();
   const primaryColor = '#5E35B1';
   const HEADER_HEIGHT = Platform.OS === 'ios' ? 110 : 90;
 
-  // Extract data from params
-  const itemName = params.itemName || 'Service Name';
-  const itemPriceParam = Array.isArray(params.itemPrice) ? params.itemPrice[0] : params.itemPrice;
-  const itemPrice = parseFloat(itemPriceParam || '0');
-  const subtotalParam = Array.isArray(params.subtotal) ? params.subtotal[0] : params.subtotal;
-  const deliveryFeeParam = Array.isArray(params.deliveryFee) ? params.deliveryFee[0] : params.deliveryFee;
-  const discountParam = Array.isArray(params.discount) ? params.discount[0] : params.discount;
-  const taxParam = Array.isArray(params.tax) ? params.tax[0] : params.tax;
-  const totalParam = Array.isArray(params.total) ? params.total[0] : params.total;
-  const subtotal = parseFloat(subtotalParam || '0');
-  const deliveryFee = parseFloat(deliveryFeeParam || '0');
-  const discount = parseFloat(discountParam || '0');
-  const tax = parseFloat(taxParam || '0');
-  const total = parseFloat(totalParam || '0');
+  // --- 2. Get ALL data from the global cart context ---
+  // This replaces the entire block of useLocalSearchParams and parseFloat.
+  const { cartItems, subtotal, deliveryFee, discount = 0, tax, total } = useCart();
+
+  // --- Local state for UI (animations, etc.) remains the same ---
+  const buttonScale = new Animated.Value(1);
+
+  // --- Dummy data that should come from a user/auth context in a real app ---
+  // These are kept here as placeholders. In a full app, they might come from another context or params.
+  const params = useLocalSearchParams();
   const pickupDate = params.pickupDate || 'N/A';
   const pickupTime = params.pickupTime || 'N/A';
   const deliveryAddressDetails = params.deliveryAddressDetails || 'Address Details';
@@ -42,7 +36,6 @@ const OrderSummary = () => {
   const paymentMethodLast4 = params.paymentMethodLast4 || '0000';
   const specialInstructionsText = params.specialInstructions || 'No special instructions.';
 
-  const buttonScale = new Animated.Value(1);
 
   const animatePressIn = () => {
     Animated.spring(buttonScale, {
@@ -60,13 +53,21 @@ const OrderSummary = () => {
     }).start();
   };
 
-  const formatToKsh = (amount) => {
+  const formatToKsh = (amount: number) => {
     return `KSh ${amount.toLocaleString('en-KE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  };
+
+  const handleConfirmAndPay = () => {
+    // This is where you would trigger the payment processing logic
+    console.log("Proceeding to payment with total:", total);
+    // On success, you might navigate to a confirmation screen
+    // router.push('/order/Order-confirmation');
+    // And potentially clear the cart
+    // clearCart();
   };
 
   return (
     <View style={styles.container}>
-      {/* Glass Header */}
       <Stack.Screen
         options={{
           header: () => (
@@ -111,22 +112,30 @@ const OrderSummary = () => {
       <ScrollView
         contentContainerStyle={[
           styles.scrollContent,
-          { paddingTop: HEADER_HEIGHT + 20, paddingBottom: 180 }
+          { paddingTop: HEADER_HEIGHT + 20 }
         ]}
         showsVerticalScrollIndicator={false}
       >
-        {/* Order Items */}
+        {/* --- 3. Render all items dynamically from the global cart --- */}
         <View style={styles.sectionCard}>
           <Text style={styles.sectionTitle}>Your Items</Text>
-          <View style={styles.itemRow}>
-            <View style={styles.itemInfo}>
-              <Text style={styles.itemName}>{itemName}</Text>
-            </View>
-            <Text style={styles.itemPrice}>{formatToKsh(itemPrice)}</Text>
-          </View>
+          {cartItems.length > 0 ? (
+            cartItems.map(item => (
+              <View key={`${item.serviceType}-${item.id}`} style={styles.itemRow}>
+                <View style={styles.itemInfo}>
+                  <Text style={styles.itemName}>{`${item.quantity}x ${item.name}`}</Text>
+                  {/* Display the service type for clarity */}
+                  <Text style={styles.itemServiceType}>{item.serviceType}</Text>
+                </View>
+                <Text style={styles.itemPrice}>{formatToKsh(item.price * item.quantity)}</Text>
+              </View>
+            ))
+          ) : (
+            <Text style={styles.infoText}>Your order is empty.</Text>
+          )}
         </View>
 
-        {/* Pickup/Delivery Info */}
+        {/* --- These sections are still using placeholder data --- */}
         <View style={styles.sectionCard}>
           <Text style={styles.sectionTitle}>Delivery Information</Text>
           <View style={styles.infoRow}>
@@ -146,7 +155,6 @@ const OrderSummary = () => {
           </TouchableOpacity>
         </View>
 
-        {/* Payment Method */}
         <View style={styles.sectionCard}>
           <Text style={styles.sectionTitle}>Payment Method</Text>
           <TouchableOpacity style={styles.paymentCard} onPress={() => router.push('/payment/payment-methods')}>
@@ -159,7 +167,7 @@ const OrderSummary = () => {
           </TouchableOpacity>
         </View>
 
-        {/* Order Summary */}
+        {/* --- 4. Render all financial data from the global cart context --- */}
         <View style={styles.sectionCard}>
           <Text style={styles.sectionTitle}>Order Total</Text>
           <View style={styles.summaryRow}>
@@ -187,14 +195,14 @@ const OrderSummary = () => {
           </View>
         </View>
 
-        {/* Special Instructions */}
         <View style={styles.sectionCard}>
           <Text style={styles.sectionTitle}>Special Instructions</Text>
           <Text style={styles.instructionsText}>{specialInstructionsText}</Text>
         </View>
       </ScrollView>
 
-      {/* Sticky Confirm Button */}
+
+      {/* --- 5. Footer now reads from context and navigates simply --- */}
       <View style={styles.footer}>
         <Animated.View style={{ transform: [{ scale: buttonScale }] }}>
           <TouchableOpacity
@@ -202,6 +210,7 @@ const OrderSummary = () => {
             activeOpacity={0.8}
             onPressIn={animatePressIn}
             onPressOut={animatePressOut}
+            onPress={handleConfirmAndPay} // Attach the payment handler
           >
             <Text style={styles.confirmButtonText}>Confirm & Pay {formatToKsh(total)}</Text>
             <MaterialCommunityIcons name="lock" size={20} color="white" />
@@ -211,6 +220,7 @@ const OrderSummary = () => {
         <TouchableOpacity
           style={styles.secondaryButton}
           activeOpacity={0.8}
+          // This simply navigates. The global context preserves the cart state automatically.
           onPress={() => router.replace('/order/select-service')}
         >
           <Text style={styles.secondaryButtonText}>Choose Another Service</Text>
@@ -232,10 +242,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#f9f9f9',
   },
   scrollContent: {
-    paddingBottom: 180,
+    paddingBottom: 220,
     paddingHorizontal: 20,
   },
-  // Glass Header Styles
   glassHeader: {
     paddingTop: Platform.OS === 'ios' ? 50 : 30,
     paddingBottom: 18,
@@ -336,11 +345,20 @@ const styles = StyleSheet.create({
   },
   itemInfo: {
     flex: 1,
+    marginRight: 10,
   },
   itemName: {
     fontSize: 16,
     color: '#333',
     fontWeight: '500',
+  },
+  // --- New style for the service type label ---
+  itemServiceType: {
+    fontSize: 13,
+    color: '#666',
+    textTransform: 'capitalize',
+    fontStyle: 'italic',
+    marginTop: 3,
   },
   itemPrice: {
     fontSize: 16,
@@ -397,7 +415,7 @@ const styles = StyleSheet.create({
   summaryRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 10,
+    marginBottom: 12,
   },
   summaryLabel: {
     fontSize: 16,

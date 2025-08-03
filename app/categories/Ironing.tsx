@@ -1,11 +1,10 @@
-import { Stack, useRouter } from 'expo-router';
-import React from 'react';
-import { StyleSheet, View, ScrollView, TouchableOpacity, Platform } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import { Colors } from '@/constants/Colors';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
+import { Stack, useRouter } from 'expo-router';
+import React from 'react';
+import { Platform, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 
 const serviceDetails = {
@@ -14,11 +13,11 @@ const serviceDetails = {
   description: 'Our premium ironing service delivers perfectly pressed clothes every time. Using professional-grade steam irons and specialized techniques, we handle all fabric types with care. From dress shirts to delicate silks, your garments will look freshly pressed and ready to wear.',
   features: [
     { icon: 'iron', text: 'Professional pressing' },
-    { icon: 'steam', text: 'High-quality steam' },
+    { icon: 'water-boiler', text: 'High-quality steam' }, 
     { icon: 'tshirt-crew', text: 'All fabric types' },
     { icon: 'clock-fast', text: 'Express service' },
     { icon: 'shield-check', text: 'Quality guarantee' },
-    { icon: 'home-edit', text: 'Ready-to-wear' },
+    { icon: 'hanger', text: 'Ready-to-wear' },
   ],
   pricingInfo: 'Starting at $2.50 per item. Bulk discounts available for 10+ items. Special items like suits or dresses priced separately.',
   priceIcon: 'currency-usd',
@@ -27,84 +26,62 @@ const serviceDetails = {
 export default function IroningScreen() {
   const router = useRouter();
   const colorScheme = 'light';
-  const primaryColor = Colors[colorScheme].tint;
+  const primaryColor = '#FF9800'; // New primary color for the page
 
   return (
     <ThemedView style={styles.fullContainer}>
-    <Stack.Screen
-  options={{
-    header: () => (
-      <BlurView
-        intensity={90}
-        tint="light"
-        style={{
-          paddingTop: Platform.OS === 'ios' ? 50 : 30,
-          paddingBottom: 18,
-          paddingHorizontal: 22,
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          borderBottomLeftRadius: 24,
-          borderBottomRightRadius: 24,
-          backgroundColor: 'rgba(245, 243, 255, 0.75)',
-          overflow: 'hidden',
-          shadowColor: '#5E35B1',
-          shadowOffset: { width: 0, height: 6 },
-          shadowOpacity: 0.2,
-          shadowRadius: 16,
-          elevation: 16,
-          borderBottomWidth: 1,
-          borderBottomColor: 'rgba(94, 53, 177, 0.1)',
-        }}
-      >
-        {/* Decorative elements */}
-        <View style={[styles.glassCircle, { top: -30, left: -20, backgroundColor: 'rgba(148, 108, 230, 0.12)' }]} />
-        <View style={[styles.glassCircle, { bottom: -40, right: -30, backgroundColor: 'rgba(94, 53, 177, 0.08)' }]} />
-        
-        {/* Back Button */}
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.ironingBackButton}
-          activeOpacity={0.8}
-        >
-          <MaterialCommunityIcons 
-            name="arrow-left" 
-            size={24} 
-            color="#5E35B1" 
-          />
-        </TouchableOpacity>
+      <Stack.Screen
+        options={{
+          header: () => (
+            <BlurView
+              intensity={90}
+              tint="light"
+              style={styles.headerBlurView}
+            >
+              {/* Back Button */}
+              <TouchableOpacity
+                onPress={() => router.back()}
+                style={styles.ironingBackButton}
+                activeOpacity={0.8}
+              >
+                <MaterialCommunityIcons
+                  name="arrow-left"
+                  size={24}
+                  color={primaryColor}
+                />
+              </TouchableOpacity>
 
-        {/* Title with Icon */}
-        <View style={styles.ironingTitleContainer}>
-          <MaterialCommunityIcons 
-            name="iron" 
-            size={24} 
-            color="#5E35B1" 
-            style={styles.ironingTitleIcon}
-          />
-          <ThemedText style={styles.ironingHeaderTitle}>
-            Ironing Service
-          </ThemedText>
-        </View>
-        
-        {/* Action Button */}
-        <TouchableOpacity
-          style={styles.infoButton}
-          onPress={() => console.log('Info pressed')}
-          activeOpacity={0.8}
-        >
-          <MaterialCommunityIcons 
-            name="information-outline" 
-            size={24} 
-            color="#5E35B1" 
-          />
-        </TouchableOpacity>
-      </BlurView>
-    ),
-    headerTransparent: true,
-    headerShadowVisible: false,
-  }}
-/>
+              {/* Title with Icon */}
+              <View style={styles.ironingTitleContainer}>
+                <MaterialCommunityIcons
+                  name="iron"
+                  size={24}
+                  color={primaryColor}
+                  style={styles.ironingTitleIcon}
+                />
+                <ThemedText style={styles.ironingHeaderTitle}>
+                  Ironing Service
+                </ThemedText>
+              </View>
+
+              {/* Action Button */}
+              <TouchableOpacity
+                style={styles.infoButton}
+                onPress={() => console.log('Info pressed')}
+                activeOpacity={0.8}
+              >
+                <MaterialCommunityIcons
+                  name="information-outline"
+                  size={24}
+                  color={primaryColor}
+                />
+              </TouchableOpacity>
+            </BlurView>
+          ),
+          headerTransparent: true,
+          headerShadowVisible: false,
+        }}
+      />
 
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         {/* Hero Section */}
@@ -128,7 +105,7 @@ export default function IroningScreen() {
           <View style={styles.featuresGrid}>
             {serviceDetails.features.map((feature, index) => (
               <View key={index} style={styles.featureCard}>
-                <MaterialCommunityIcons name={feature.icon} size={26} color={primaryColor} />
+                <MaterialCommunityIcons name={feature.icon as any} size={26} color={primaryColor} />
                 <ThemedText style={styles.featureText}>{feature.text}</ThemedText>
               </View>
             ))}
@@ -166,17 +143,28 @@ const styles = StyleSheet.create({
     backgroundColor: '#f9f9f9',
   },
   scrollViewContent: {
-    paddingTop: 0,
+    paddingTop: 120, // Adjusted padding to reduce spacing
     paddingBottom: 100,
     paddingHorizontal: 20,
   },
-  backButton: {
-    marginLeft: 10,
-    padding: 8,
-    borderRadius: 20,
-    backgroundColor: 'rgba(94,53,177,0.1)',
-    justifyContent: 'center',
+  headerBlurView: {
+    paddingTop: Platform.OS === 'ios' ? 50 : 30,
+    paddingBottom: 18,
+    paddingHorizontal: 22,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+    backgroundColor: 'rgba(255, 152, 0, 0.1)', // Adjusted blur color
+    overflow: 'hidden',
+    shadowColor: '#FF9800', // Adjusted shadow color
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+    elevation: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 152, 0, 0.1)', // Adjusted border color
   },
   heroSection: {
     alignItems: 'center',
@@ -235,35 +223,35 @@ const styles = StyleSheet.create({
   },
   featureCard: {
     width: '48%',
-    backgroundColor: '#F7F4FD',
+    backgroundColor: '#FFFBEA', // Adjusted background color
     borderRadius: 10,
     padding: 15,
     marginBottom: 15,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#EFEBF8',
+    borderColor: '#FFECB3', // Adjusted border color
   },
   featureText: {
     fontSize: 13,
     fontWeight: '600',
     textAlign: 'center',
     marginTop: 8,
-    color: '#5E35B1',
+    color: '#FF9800',
   },
   pricingCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E6F4EA',
+    backgroundColor: '#FFF3E0', // Adjusted background color
     borderRadius: 10,
     padding: 15,
     borderWidth: 1,
-    borderColor: '#D4ECC6',
+    borderColor: '#FFCC80', // Adjusted border color
   },
   pricingText: {
     flex: 1,
     marginLeft: 15,
     fontSize: 15,
-    color: '#4CAF50',
+    color: '#FF9800', // Adjusted text color
     lineHeight: 22,
   },
   bottomButtonContainer: {
@@ -289,7 +277,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 16,
     borderRadius: 30,
-    shadowColor: '#5E35B1',
+    shadowColor: '#FF9800', // Adjusted shadow color
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
     shadowRadius: 15,
@@ -304,16 +292,16 @@ const styles = StyleSheet.create({
   orderButtonIcon: {
     marginLeft: 10,
   },
-ironingBackButton: {
+  ironingBackButton: {
     width: 42,
     height: 42,
     borderRadius: 21,
-    backgroundColor: 'rgba(94, 53, 177, 0.12)',
+    backgroundColor: 'rgba(255, 152, 0, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(94, 53, 177, 0.08)',
-    shadowColor: '#5E35B1',
+    borderColor: 'rgba(255, 152, 0, 0.08)',
+    shadowColor: '#FF9800',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
     shadowRadius: 4,
@@ -322,12 +310,12 @@ ironingBackButton: {
   ironingTitleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(94, 53, 177, 0.08)',
+    backgroundColor: 'rgba(255, 152, 0, 0.1)',
     borderRadius: 20,
     paddingVertical: 6,
     paddingHorizontal: 16,
     borderWidth: 1,
-    borderColor: 'rgba(94, 53, 177, 0.05)',
+    borderColor: 'rgba(255, 152, 0, 0.05)',
   },
   ironingTitleIcon: {
     marginRight: 10,
@@ -335,22 +323,16 @@ ironingBackButton: {
   ironingHeaderTitle: {
     fontWeight: '700',
     fontSize: 18,
-    color: '#2D1155',
+    color: '#2D1155', // Kept this dark purple for contrast
   },
   infoButton: {
     width: 42,
     height: 42,
     borderRadius: 21,
-    backgroundColor: 'rgba(94, 53, 177, 0.08)',
+    backgroundColor: 'rgba(255, 152, 0, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(94, 53, 177, 0.05)',
-  },
-  glassCircle: {
-    position: 'absolute',
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    borderColor: 'rgba(255, 152, 0, 0.05)',
   },
 });

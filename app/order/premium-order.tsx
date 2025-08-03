@@ -7,6 +7,7 @@ import { Stack, useRouter } from 'expo-router';
 import { Picker } from '@react-native-picker/picker';
 import { LinearGradient } from 'expo-linear-gradient';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { BlurView } from 'expo-blur';
 
 const PremiumOrderScreen = () => {
   const router = useRouter();
@@ -24,7 +25,7 @@ const PremiumOrderScreen = () => {
     {
       id: 'elite',
       name: 'Elite Membership',
-      price: '$99/month',
+      price: 'Ksh 13,000/month',
       features: [
         'Unlimited express service',
         'Premium fabric care',
@@ -35,7 +36,7 @@ const PremiumOrderScreen = () => {
     {
       id: 'premium',
       name: 'Premium Plus',
-      price: '$69/month',
+      price: 'Ksh 9,000/month',
       features: [
         '15 items weekly',
         'Standard express service',
@@ -45,7 +46,7 @@ const PremiumOrderScreen = () => {
     {
       id: 'basic',
       name: 'Essential Care',
-      price: '$49/month',
+      price: 'Ksh 6,500/month',
       features: [
         '10 items weekly',
         'Basic care',
@@ -58,7 +59,7 @@ const PremiumOrderScreen = () => {
     { 
       id: 'stain', 
       name: 'Advanced Stain Treatment', 
-      price: '+$5', 
+      price: '+Ksh 650', 
       icon: 'spray-bottle',
       description: 'Professional treatment for tough stains using specialized solutions.',
       benefits: [
@@ -70,7 +71,7 @@ const PremiumOrderScreen = () => {
     { 
       id: 'eco', 
       name: 'Eco Detergent Upgrade', 
-      price: '+$3', 
+      price: '+Ksh 400', 
       icon: 'leaf',
       description: 'Environmentally friendly cleaning with plant-based detergents.',
       benefits: [
@@ -82,7 +83,7 @@ const PremiumOrderScreen = () => {
     { 
       id: 'handwash',
       name: 'Hand Wash Special',
-      price: '+$8',
+      price: '+Ksh 1,000',
       icon: 'hand-water',
       description: 'Gentle hand washing for delicate fabrics (silk, wool, lingerie) using mild detergents and cold water to prevent damage.',
       benefits: [
@@ -96,7 +97,7 @@ const PremiumOrderScreen = () => {
     { 
       id: 'steam',
       name: 'Professional Steam Press',
-      price: '+$7', 
+      price: '+Ksh 900', 
       icon: 'steam',
       description: 'Advanced steam finishing that removes deep wrinkles while sanitizing fabrics without harsh pressing.',
       benefits: [
@@ -110,7 +111,7 @@ const PremiumOrderScreen = () => {
     { 
       id: 'storage', 
       name: '1 Month Storage', 
-      price: '+$15', 
+      price: '+Ksh 2,000', 
       icon: 'wardrobe',
       description: 'Climate-controlled storage for seasonal items with protective packaging.',
       benefits: [
@@ -141,10 +142,10 @@ const PremiumOrderScreen = () => {
   };
 
   const calculateTotal = () => {
-    const planPrice = selectedPlan === 'elite' ? 99 : selectedPlan === 'premium' ? 69 : 49;
+    const planPrice = selectedPlan === 'elite' ? 13000 : selectedPlan === 'premium' ? 9000 : 6500;
     const addonPrices = selectedAddons.reduce((total, addonId) => {
       const addon = addons.find(a => a.id === addonId);
-      return total + parseInt(addon.price.replace('+$', ''), 10);
+      return total + parseInt(addon.price.replace('+Ksh ', '').replace(',', ''), 10);
     }, 0);
     return planPrice + addonPrices;
   };
@@ -153,19 +154,76 @@ const PremiumOrderScreen = () => {
     <ThemedView style={styles.container}>
       <Stack.Screen
         options={{
-          title: 'Premium Enrollment',
-          headerTitleStyle: { fontWeight: 'bold' },
-          headerShadowVisible: false,
-          headerBackVisible: false,
-          headerLeft: () => (
-            <TouchableOpacity
-              onPress={() => router.back()}
-              style={styles.backButton}
-              activeOpacity={0.7}
+          header: () => (
+            <BlurView
+              intensity={95}
+              tint="light"
+              style={{
+                paddingTop: Platform.OS === 'ios' ? 50 : 30,
+                paddingBottom: 18,
+                paddingHorizontal: 22,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                borderBottomLeftRadius: 24,
+                borderBottomRightRadius: 24,
+                backgroundColor: 'rgba(250, 245, 255, 0.8)', // Lighter background for premium feel
+                overflow: 'hidden',
+                shadowColor: '#8E44AD', // Purple with a hint of luxury
+                shadowOffset: { width: 0, height: 8 },
+                shadowOpacity: 0.25,
+                shadowRadius: 20,
+                elevation: 20,
+                borderBottomWidth: 1,
+                borderBottomColor: 'rgba(142, 68, 173, 0.15)', // Deep purple border
+              }}
             >
-              <MaterialCommunityIcons name="arrow-left" size={24} color={primaryColor} />
-            </TouchableOpacity>
+              {/* Premium decorative elements */}
+              <View style={[styles.glassCircle, { top: -30, left: -20, backgroundColor: 'rgba(155, 89, 182, 0.15)' }]} />
+              <View style={[styles.glassDiamond, { bottom: -40, right: -30, backgroundColor: 'rgba(142, 68, 173, 0.1)' }]} />
+
+              {/* Back Button */}
+              <TouchableOpacity
+                onPress={() => router.back()}
+                style={styles.premiumBackButton}
+                activeOpacity={0.8}
+              >
+                <MaterialCommunityIcons 
+                  name="arrow-left" 
+                  size={24} 
+                  color="#8E44AD" // Deep purple
+                />
+              </TouchableOpacity>
+
+              {/* Title with Premium Icon */}
+              <View style={styles.premiumTitleContainer}>
+                <MaterialCommunityIcons 
+                  name="crown" 
+                  size={24} 
+                  color="#8E44AD" 
+                  style={styles.premiumTitleIcon}
+                />
+                <ThemedText style={styles.premiumHeaderTitle}>
+                  Premium Enrollment
+                </ThemedText>
+              </View>
+
+              {/* Premium Action Button */}
+              <TouchableOpacity
+                style={styles.premiumInfoButton}
+                onPress={() => console.log('Premium info pressed')}
+                activeOpacity={0.8}
+              >
+                <MaterialCommunityIcons 
+                  name="diamond-stone" 
+                  size={24} 
+                  color="#8E44AD" 
+                />
+              </TouchableOpacity>
+            </BlurView>
           ),
+          headerTransparent: true,
+          headerShadowVisible: false,
         }}
       />
 
@@ -356,7 +414,7 @@ const PremiumOrderScreen = () => {
           
           <View style={styles.summaryRow}>
             <ThemedText style={styles.summaryTotalLabel}>Total:</ThemedText>
-            <ThemedText style={styles.summaryTotalValue}>${calculateTotal()}/month</ThemedText>
+            <ThemedText style={styles.summaryTotalValue}>Ksh {calculateTotal().toLocaleString()}/month</ThemedText>
           </View>
         </View>
       </ScrollView>
@@ -373,7 +431,7 @@ const PremiumOrderScreen = () => {
           onPress={() => console.log('Order placed')}
         >
           <ThemedText style={styles.orderButtonText}>Complete Enrollment</ThemedText>
-          <ThemedText style={styles.orderButtonSubtext}>${calculateTotal()}/month</ThemedText>
+          <ThemedText style={styles.orderButtonSubtext}>Ksh {calculateTotal().toLocaleString()}/month</ThemedText>
           <MaterialCommunityIcons name="lock" size={20} color="white" />
         </TouchableOpacity>
       </LinearGradient>
@@ -388,7 +446,9 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     paddingBottom: 120,
-    paddingHorizontal: 20
+    paddingHorizontal: 20,
+    // Add extra padding at the top to account for the custom header
+    paddingTop: Platform.OS === 'ios' ? 140 : 120
   },
   backButton: {
     marginLeft: 10,
@@ -676,7 +736,65 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginRight: 10
-  }
+  },
+   premiumBackButton: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: 'rgba(142, 68, 173, 0.12)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(142, 68, 173, 0.08)',
+    shadowColor: '#8E44AD',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  premiumTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(142, 68, 173, 0.08)',
+    borderRadius: 20,
+    paddingVertical: 6,
+    paddingHorizontal: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(142, 68, 173, 0.05)',
+  },
+  premiumTitleIcon: {
+    marginRight: 10,
+  },
+  premiumHeaderTitle: {
+    fontWeight: '800', // Extra bold for premium
+    fontSize: 18,
+    color: '#4A235A', // Deep purple for luxury
+    textShadowColor: 'rgba(142, 68, 173, 0.2)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
+  premiumInfoButton: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: 'rgba(142, 68, 173, 0.08)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(142, 68, 173, 0.05)',
+  },
+   glassCircle: {
+    position: 'absolute',
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+  },
+  glassDiamond: {
+    position: 'absolute',
+    width: 70,
+    height: 70,
+    transform: [{ rotate: '45deg' }],
+  },
 });
 
 export default PremiumOrderScreen;
